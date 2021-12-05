@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import dmitry.molchanov.common.MainViewModel
 import dmitry.molchanov.common.MainViewModelFactory
 import dmitry.molchanov.common.PauseAction
+import dmitry.molchanov.common.ReleaseAction
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -31,5 +32,10 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         viewModel.onAction(PauseAction)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.onAction(ReleaseAction)
     }
 }

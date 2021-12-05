@@ -24,7 +24,7 @@ fun Context.viewScreenRoot(viewModel: MainViewModel): ListeningView =
                 viewModel.onAction(PlayAction)
             },
             timeLine { timeLineProgress ->
-                viewModel.onAction(TimeLineProgressChanged(timeLineProgress))
+                viewModel.onAction(SetPlayerPosition(timeLineProgress))
             },
         )
             .onEach(::addView)
@@ -43,7 +43,7 @@ private fun Context.progressBar(): ListeningView {
         }
     }
     val listener = StateChangeListener { state ->
-        view.visibility = if (state == LoadingState) VISIBLE else GONE
+        view.visibility = if (state is LoadingState) VISIBLE else GONE
     }
     return ListeningView(view, listener)
 }
@@ -54,7 +54,7 @@ private fun Context.playerView(): ListeningView {
         layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
     }
     val listener = StateChangeListener { state ->
-        view.player = (state as? PlayingState)?.player
+        view.player = (state as? PlayerHolder)?.player
     }
     return ListeningView(view, listener)
 }
@@ -69,7 +69,7 @@ private fun Context.pauseButton(onClick: () -> Unit): ListeningView {
     }
     val listener = StateChangeListener { state ->
         view.visibility =
-            if (state is PlayingState && state.player.isPlaying) VISIBLE else GONE
+            if (state is PlayingState) VISIBLE else GONE
     }
     return ListeningView(view, listener)
 }
@@ -83,13 +83,14 @@ private fun Context.playButton(onClick: () -> Unit): ListeningView {
         setOnClickListener { onClick() }
     }
     val listener = StateChangeListener { state ->
-        view.visibility = if (state is PlayingState && !state.player.isPlaying) VISIBLE else GONE
+        view.visibility = if (state is PauseState) VISIBLE else GONE
     }
     return ListeningView(view, listener)
 }
 
-private fun Context.timeLine(onTimeLineProgressChanged: (Int) -> Unit): ListeningView {
+private fun Context.timeLine(onTimeLineProgressChanged: (Long) -> Unit): ListeningView {
     var isBarEdit = false
+    var duration = 0L
     val view = SeekBar(this).apply {
         layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
             gravity = Gravity.BOTTOM
@@ -103,13 +104,15 @@ private fun Context.timeLine(onTimeLineProgressChanged: (Int) -> Unit): Listenin
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {
                 isBarEdit = false
-                onTimeLineProgressChanged(seekBar.progress)
+                val newPosition =  seekBar.progress * duration/ 100
+                onTimeLineProgressChanged(newPosition)
             }
         })
     }
     val listener = StateChangeListener { state ->
-        if (state is PlayingState && !isBarEdit) {
-            val progress = state.player.currentPosition * 100 / state.player.duration
+        if (state is PlayerHolder && !isBarEdit && state.player.duration != 0L) {
+            duration = state.player.duration
+            val progress = state.player.currentPosition * 100 / duration
             view.progress = progress.toInt()
         }
     }

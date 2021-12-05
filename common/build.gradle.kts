@@ -33,8 +33,6 @@ android {
 }
 
 dependencies {
-    listOf(
-        Deps.exo_player,
-        Deps.androidx_lifecycle_viewmodel_ktx
-    ).forEach(::implementation)
+    api(Deps.exo_player)
+    implementation(Deps.androidx_lifecycle_viewmodel_ktx)
 }

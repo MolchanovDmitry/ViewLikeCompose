@@ -8,3 +8,4 @@ dependencyResolutionManagement {
 rootProject.name = "ViewVsCompose"
 include ':view'
 include ':common'
+include ':compose'

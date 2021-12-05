@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
 
-    private val _stateFlow = MutableStateFlow<MainViewState>(Undefined)
+    private val _stateFlow = MutableStateFlow<MainViewState>(UndefinedState)
     val stateFlow = _stateFlow.asStateFlow()
 
     init {
@@ -33,27 +34,36 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
             PlayAction -> player.play()
             PauseAction -> player.pause()
             ReleaseAction -> player.release()
-            is TimeLineProgressChanged -> onTimeLineProgressChanged(action.timeLineProgress)
+            is SetPlayerPosition -> onTimeLineProgressChanged(action.newPosition)
         }
     }
 
     override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
         when (playbackState) {
+            STATE_IDLE -> {
+                if (stateFlow.value !is ErrorState) {
+                    UndefinedState
+                } else {
+                    return
+                }
+            }
             STATE_BUFFERING -> {
-                LoadingState
+                LoadingState(player)
             }
             STATE_READY -> {
                 if (playWhenReady) {
                     runProgressChangeJob()
+                    PlayingState(player)
                 } else {
                     stopProgressChangeJob()
+                    PauseState(player)
                 }
-                PlayingState(player)
             }
-            else -> {
+            STATE_ENDED -> {
                 stopProgressChangeJob()
-                Undefined
+                PauseState(player)
             }
+            else -> error("Uncatched exception")
         }.let { state -> _stateFlow.value = state }
     }
 
@@ -67,7 +77,7 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
     private fun runProgressChangeJob() {
         progressJob?.cancel()
         progressJob = viewModelScope.launch {
-            delay(1000)
+            delay(1_000)
             _stateFlow.value = PlayingState(player)
             runProgressChangeJob()
         }
@@ -78,9 +88,8 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
         progressJob = null
     }
 
-    private fun onTimeLineProgressChanged(timeLineProgress: Int) {
-        val newPosition = timeLineProgress * player.duration / 100
-        player.seekTo(newPosition)
+    private fun onTimeLineProgressChanged(timeLineProgress: Long) {
+        player.seekTo(timeLineProgress)
     }
 }
 
@@ -94,16 +103,20 @@ class MainViewModelFactory(
     }
 }
 
+interface PlayerHolder {
+    val player: Player
+}
+
 sealed class MainViewState
-object Undefined : MainViewState()
-object LoadingState : MainViewState()
-object PauseState : MainViewState()
+object UndefinedState : MainViewState()
 class ErrorState(val message: String) : MainViewState()
-class PlayingState(val player: ExoPlayer) : MainViewState()
+class PauseState(override val player: Player) : MainViewState(), PlayerHolder
+class PlayingState(override val player: Player) : MainViewState(), PlayerHolder
+class LoadingState(override val player: Player) : MainViewState(), PlayerHolder
 
 
 sealed class ViewModelAction
 object PlayAction : ViewModelAction()
 object PauseAction : ViewModelAction()
 object ReleaseAction : ViewModelAction()
-class TimeLineProgressChanged(val timeLineProgress: Int) : ViewModelAction()
+class SetPlayerPosition(val newPosition: Long) : ViewModelAction()

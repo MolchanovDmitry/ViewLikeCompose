@@ -1,7 +1,8 @@
 object Deps {
 
-    const val androidx_core_ktx = "androidx.core:core-ktx:1.7.0"
+    const val androidx_activity_ktx = "androidx.activity:activity-ktx:1.4.0"
     const val androidx_appcompat = "androidx.appcompat:appcompat:1.3.1"
+    //const val androidx_activity_ktx = "'androidx.activity:activity-ktx:1.4.0'"
     const val material = "com.google.android.material:material:1.4.0"
 
     // Exo player

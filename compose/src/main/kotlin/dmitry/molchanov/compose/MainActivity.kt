@@ -6,6 +6,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import dmitry.molchanov.common.MainViewModel
 import dmitry.molchanov.common.MainViewModelFactory
+import dmitry.molchanov.common.PauseAction
+import dmitry.molchanov.common.ReleaseAction
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,5 +18,15 @@ class MainActivity : AppCompatActivity() {
         setContent {
             MainScreen(viewModel)
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.onAction(PauseAction)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.onAction(ReleaseAction)
     }
 }

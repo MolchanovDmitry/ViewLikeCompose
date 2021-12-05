@@ -20,7 +20,8 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
     private val _stateFlow = MutableStateFlow<MainViewState>(UndefinedState)
     val stateFlow = _stateFlow.asStateFlow()
 
-    private var progressJob: Job? = null
+    /** Задача обновления позиции плеера */
+    private var updatePositionJob: Job? = null
 
     init {
         player.apply {
@@ -36,7 +37,7 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
             PlayAction -> player.play()
             PauseAction -> player.pause()
             ReleaseAction -> player.release()
-            is SetPlayerPosition -> onTimeLineProgressChanged(action.newPosition)
+            is SetPlayerPosition -> player.seekTo(action.newPosition)
         }
     }
 
@@ -81,22 +82,20 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
         _stateFlow.value = PauseState(player)
     }
 
+    /** Обновляем позицию плеера каждую секунду. */
     private fun runProgressChangeJob() {
-        progressJob?.cancel()
-        progressJob = viewModelScope.launch {
+        updatePositionJob?.cancel()
+        updatePositionJob = viewModelScope.launch {
             delay(1_000)
             _stateFlow.value = PlayingState(player)
             runProgressChangeJob()
         }
     }
 
+    /** Остановка обновления позиции плеера. */
     private fun stopProgressChangeJob() {
-        progressJob?.cancel()
-        progressJob = null
-    }
-
-    private fun onTimeLineProgressChanged(timeLineProgress: Long) {
-        player.seekTo(timeLineProgress)
+        updatePositionJob?.cancel()
+        updatePositionJob = null
     }
 }
 

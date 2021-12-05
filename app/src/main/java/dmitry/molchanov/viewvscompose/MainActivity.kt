@@ -1,6 +1,7 @@
 package dmitry.molchanov.viewvscompose
 
 import android.content.Context
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Gravity
@@ -9,10 +10,7 @@ import android.view.View.*
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.SeekBar
+import android.widget.*
 import androidx.activity.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -41,6 +39,7 @@ private fun Context.root(viewModel: MainViewModel): ListeningView =
         val stateListeners = arrayOf(
             playerView(),
             progressBar(),
+            errorView(),
             pauseButton {
                 viewModel.onAction(PauseAction)
             },
@@ -49,7 +48,7 @@ private fun Context.root(viewModel: MainViewModel): ListeningView =
             },
             timeLine { timeLineProgress ->
                 viewModel.onAction(TimeLineProgressChanged(timeLineProgress))
-            }
+            },
         )
             .onEach(::addView)
             .map { view -> view.stateChangeListener }
@@ -134,6 +133,23 @@ private fun Context.timeLine(onTimeLineProgressChanged: (Int) -> Unit): Listenin
         if (state is PlayingState && !isBarEdit) {
             val progress = state.player.currentPosition * 100 / state.player.duration
             view.progress = progress.toInt()
+        }
+    }
+    return ListeningView(view, listener)
+}
+
+private fun Context.errorView(): ListeningView {
+    val view = TextView(this).apply {
+        setTextColor(Color.WHITE)
+        visibility = GONE
+        layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+            gravity = Gravity.CENTER
+        }
+    }
+    val listener = StateChangeListener { state ->
+        if (state is ErrorState) {
+            view.text = state.message
+            view.visibility = VISIBLE
         }
     }
     return ListeningView(view, listener)

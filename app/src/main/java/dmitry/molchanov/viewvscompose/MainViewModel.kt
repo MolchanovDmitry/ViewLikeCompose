@@ -22,7 +22,7 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
     init {
         player.apply {
             addListener(this@MainViewModel)
-            addMediaItem(MediaItem.fromUri("https://clck.ru/YQb6f"))
+            addMediaItem(MediaItem.fromUri("https://clck.ru/7777YQb6f"))
             prepare()
             play()
         }

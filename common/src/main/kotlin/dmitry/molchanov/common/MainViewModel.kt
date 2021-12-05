@@ -20,6 +20,8 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
     private val _stateFlow = MutableStateFlow<MainViewState>(UndefinedState)
     val stateFlow = _stateFlow.asStateFlow()
 
+    private var progressJob: Job? = null
+
     init {
         player.apply {
             addListener(this@MainViewModel)
@@ -40,31 +42,12 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
 
     override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
         when (playbackState) {
-            STATE_IDLE -> {
-                if (stateFlow.value !is ErrorState) {
-                    UndefinedState
-                } else {
-                    return
-                }
-            }
-            STATE_BUFFERING -> {
-                LoadingState(player)
-            }
-            STATE_READY -> {
-                if (playWhenReady) {
-                    runProgressChangeJob()
-                    PlayingState(player)
-                } else {
-                    stopProgressChangeJob()
-                    PauseState(player)
-                }
-            }
-            STATE_ENDED -> {
-                stopProgressChangeJob()
-                PauseState(player)
-            }
+            STATE_IDLE -> onIdleState()
+            STATE_BUFFERING -> onBufferingState()
+            STATE_READY -> onReadyState(playWhenReady)
+            STATE_ENDED -> onFinish()
             else -> error("Uncatched exception")
-        }.let { state -> _stateFlow.value = state }
+        }
     }
 
     override fun onPlayerError(error: PlaybackException) {
@@ -72,7 +55,31 @@ class MainViewModel(private val player: ExoPlayer) : ViewModel(), Listener {
         _stateFlow.value = ErrorState(error.message ?: "Undefined error")
     }
 
-    private var progressJob: Job? = null
+    private fun onIdleState() {
+        if (stateFlow.value !is ErrorState) {
+            _stateFlow.value = UndefinedState
+        }
+    }
+
+    private fun onBufferingState() {
+        stopProgressChangeJob()
+        _stateFlow.value = LoadingState(player)
+    }
+
+    private fun onReadyState(playWhenReady: Boolean) {
+        _stateFlow.value = if (playWhenReady) {
+            runProgressChangeJob()
+            PlayingState(player)
+        } else {
+            stopProgressChangeJob()
+            PauseState(player)
+        }
+    }
+
+    private fun onFinish() {
+        stopProgressChangeJob()
+        _stateFlow.value = PauseState(player)
+    }
 
     private fun runProgressChangeJob() {
         progressJob?.cancel()

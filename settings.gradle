@@ -6,4 +6,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "ViewVsCompose"
-include ':app'
+include ':view'
+include ':common'

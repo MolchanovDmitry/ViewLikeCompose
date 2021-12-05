@@ -54,7 +54,7 @@ private fun Context.playerView(): ListeningView {
         layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
     }
     val listener = StateChangeListener { state ->
-        view.player = (state as? PlayingState)?.player
+        view.player = (state as? PlayerHolder)?.player
     }
     return ListeningView(view, listener)
 }
@@ -69,7 +69,7 @@ private fun Context.pauseButton(onClick: () -> Unit): ListeningView {
     }
     val listener = StateChangeListener { state ->
         view.visibility =
-            if (state is PlayingState && state.player.isPlaying) VISIBLE else GONE
+            if (state is PlayingState) VISIBLE else GONE
     }
     return ListeningView(view, listener)
 }
@@ -83,7 +83,7 @@ private fun Context.playButton(onClick: () -> Unit): ListeningView {
         setOnClickListener { onClick() }
     }
     val listener = StateChangeListener { state ->
-        view.visibility = if (state is PlayingState && !state.player.isPlaying) VISIBLE else GONE
+        view.visibility = if (state is PauseState) VISIBLE else GONE
     }
     return ListeningView(view, listener)
 }

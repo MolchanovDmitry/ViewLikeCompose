@@ -20,12 +20,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val viewWithParams = viewScreenRoot(viewModel)
-        setContentView(viewWithParams.view)
+        val stateView = viewScreenRoot(viewModel)
+        setContentView(stateView.view)
 
         viewModel.stateFlow
             .flowWithLifecycle(lifecycle, Lifecycle.State.CREATED)
-            .onEach(viewWithParams.stateChangeListener::onStateChanged)
+            .onEach(stateView::processState)
             .launchIn(lifecycleScope)
     }
 

@@ -50,12 +50,8 @@ dependencies {
         Deps.androidx_lifecycle_runtime_ktx,
         Deps.compose_activity,
         Deps.compose_material,
-        Deps.compose_foundation,
         Deps.compose_icons_core,
         Deps.compose_icons_extended,
-        Deps.compose_ui,
-        Deps.compose_ui_tooling,
-        Deps.compose_view_model,
     ).forEach (::implementation)
 
 }

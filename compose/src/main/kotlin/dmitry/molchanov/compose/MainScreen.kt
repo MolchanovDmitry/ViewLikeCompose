@@ -22,9 +22,15 @@ fun MainScreen(viewModel: MainViewModel) {
     ) {
         ExoPlayerView(state)
         ProgressBar(state)
-        PlayButton(state) { viewModel.onAction(PlayAction) }
-        PauseButton(state) { viewModel.onAction(PauseAction) }
-        TimeLine(state) { newPosition -> viewModel.onAction(SetPlayerPosition(newPosition)) }
+        PlayButton(state) {
+            viewModel.onAction(PlayAction)
+        }
+        PauseButton(state) {
+            viewModel.onAction(PauseAction)
+        }
+        TimeLine(state) { newPosition ->
+            viewModel.onAction(SetPlayerPosition(newPosition))
+        }
         ErrorView(state)
     }
 }

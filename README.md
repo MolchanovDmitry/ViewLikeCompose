@@ -29,8 +29,8 @@
 Панель управления плеера, реализованная с использованием [Jetpack Compose](https://developer.android.com/jetpack/compose).
 Кто хочет сразу перейти к исходникам и сравнить:
 
-[Compose панель управления.]()\
-[View панель управления.]()
+[Compose панель управления.](https://github.com/MolchanovDmitry/ViewLikeCompose/blob/master/compose/src/main/kotlin/dmitry/molchanov/compose/MainScreen.kt)\
+[View панель управления.](https://github.com/MolchanovDmitry/ViewLikeCompose/blob/master/view/src/main/kotlin/dmitry/molchanov/viewlikecompose/MainScreen.kt)
 
 ## Модуль приложения view
 
@@ -300,5 +300,5 @@ private fun Context.timeLine(onTimeLineProgressChanged: (Long) -> Unit): StateVi
 Если очень хочется, то можно писать в compose стиле и на android View.
 Но я все же всем советую переходить на compose.
 
-[Compose панель управления.]()\
-[View панель управления.]()
+[Compose панель управления.](https://github.com/MolchanovDmitry/ViewLikeCompose/blob/master/compose/src/main/kotlin/dmitry/molchanov/compose/MainScreen.kt)\
+[View панель управления.](https://github.com/MolchanovDmitry/ViewLikeCompose/blob/master/view/src/main/kotlin/dmitry/molchanov/viewlikecompose/MainScreen.kt)

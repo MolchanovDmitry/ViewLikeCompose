@@ -1,4 +1,4 @@
-package dmitry.molchanov.viewvscompose
+package dmitry.molchanov.viewlikecompose
 
 import android.os.Bundle
 import androidx.activity.viewModels

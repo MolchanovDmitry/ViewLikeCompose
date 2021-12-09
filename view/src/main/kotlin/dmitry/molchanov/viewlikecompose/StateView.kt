@@ -1,4 +1,4 @@
-package dmitry.molchanov.viewvscompose
+package dmitry.molchanov.viewlikecompose
 
 import android.view.View
 import dmitry.molchanov.common.MainViewState

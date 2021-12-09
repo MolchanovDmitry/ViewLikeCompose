@@ -1,4 +1,4 @@
-package dmitry.molchanov.viewvscompose
+package dmitry.molchanov.viewlikecompose
 
 import android.content.Context
 import android.graphics.Color

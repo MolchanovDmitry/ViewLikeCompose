@@ -7,7 +7,7 @@ android {
     compileSdk =  31
 
     defaultConfig {
-        applicationId  = "dmitry.molchanov.viewvscompose"
+        applicationId  = "dmitry.molchanov.viewlikecompose"
         minSdk  = 21
         targetSdk  = 31
         versionCode  = 1

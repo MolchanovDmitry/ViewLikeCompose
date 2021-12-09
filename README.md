@@ -15,7 +15,8 @@
 
 
 ## О проекте.
-Одними из главных недостатках андроид View в сравнении с Jetpack Compose:
+Одними из главных недостатках андроид [View](https://developer.android.com/reference/android/view/View)
+в сравнении с [Jetpack Compose](https://developer.android.com/jetpack/compose):
 * Разметка и обработка находятся в двух разных местах.
 * Работа с View не заточена под состояния.
 

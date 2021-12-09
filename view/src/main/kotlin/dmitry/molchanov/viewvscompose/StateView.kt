@@ -3,10 +3,13 @@ package dmitry.molchanov.viewvscompose
 import android.view.View
 import dmitry.molchanov.common.MainViewState
 
-
-class StateView<T : View>(
+/**
+ * View, с блоком обработки состояния [MainViewState].
+ */
+class StateView<T : View, R>(
     val view: T,
-    private val listener: T.(MainViewState) -> Unit
+    private val stateChangeBlock: T.(R) -> Unit
 ) {
-    fun processState(state: MainViewState) = view.listener(state)
+    /** Вызывается, когда получили новое состояние [state] */
+    fun processState(state: R) = view.stateChangeBlock(state)
 }

@@ -11,7 +11,7 @@ import android.widget.*
 import com.google.android.exoplayer2.ui.PlayerView
 import dmitry.molchanov.common.*
 
-fun Context.viewScreenRoot(viewModel: MainViewModel): StateView<FrameLayout> {
+fun Context.viewScreenRoot(viewModel: MainViewModel): StateView<FrameLayout, MainViewState> {
     val viewWrappers = arrayOf(
         playerView(),
         progressBar(),
@@ -32,7 +32,7 @@ fun Context.viewScreenRoot(viewModel: MainViewModel): StateView<FrameLayout> {
                 .map { it.view }
                 .forEach(::addView)
         },
-        listener = { state ->
+        stateChangeBlock = { state ->
             viewWrappers.forEach { viewWrapper -> viewWrapper.processState(state) }
         }
     )
@@ -40,29 +40,29 @@ fun Context.viewScreenRoot(viewModel: MainViewModel): StateView<FrameLayout> {
 
 
 private fun Context.progressBar() =
-    StateView(
+    StateView<ProgressBar, MainViewState>(
         view = ProgressBar(this).apply {
             layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 gravity = Gravity.CENTER
             }
         },
-        listener = { state ->
+        stateChangeBlock = { state ->
             visibility = if (state is LoadingState) VISIBLE else GONE
         }
     )
 
 private fun Context.playerView() =
-    StateView(
+    StateView<PlayerView, MainViewState>(
         view = PlayerView(this).apply {
             useController = false
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         },
-        listener = { state ->
+        stateChangeBlock = { state ->
             player = (state as? PlayerHolder)?.player
         })
 
 private fun Context.pauseButton(onClick: () -> Unit) =
-    StateView(
+    StateView<ImageView, MainViewState>(
         view = ImageView(this).apply {
             setImageResource(R.drawable.ic_pause)
             layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
@@ -70,13 +70,13 @@ private fun Context.pauseButton(onClick: () -> Unit) =
             }
             setOnClickListener { onClick() }
         },
-        listener = { state ->
+        stateChangeBlock = { state ->
             visibility = if (state is PlayingState) VISIBLE else GONE
         }
     )
 
 private fun Context.playButton(onClick: () -> Unit) =
-    StateView(
+    StateView<ImageView, MainViewState>(
         view = ImageView(this).apply {
             setImageResource(R.drawable.ic_play)
             layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
@@ -84,12 +84,12 @@ private fun Context.playButton(onClick: () -> Unit) =
             }
             setOnClickListener { onClick() }
         },
-        listener = { state ->
+        stateChangeBlock = { state ->
             visibility = if (state is PauseState) VISIBLE else GONE
         }
     )
 
-private fun Context.timeLine(onTimeLineProgressChanged: (Long) -> Unit): StateView<SeekBar> {
+private fun Context.timeLine(onTimeLineProgressChanged: (Long) -> Unit): StateView<SeekBar, MainViewState> {
     var isBarEdit = false
     var duration = 0L
     return StateView(
@@ -112,7 +112,7 @@ private fun Context.timeLine(onTimeLineProgressChanged: (Long) -> Unit): StateVi
                 }
             })
         },
-        listener = { state ->
+        stateChangeBlock = { state ->
             if (state is PlayerHolder && !isBarEdit && state.player.duration != 0L) {
                 duration = state.player.duration
                 val progress = state.player.currentPosition * 100 / duration
@@ -122,14 +122,15 @@ private fun Context.timeLine(onTimeLineProgressChanged: (Long) -> Unit): StateVi
 }
 
 private fun Context.errorView() =
-    StateView(
+    StateView<TextView, MainViewState>(
         view = TextView(this).apply {
             setTextColor(Color.WHITE)
             visibility = GONE
             layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 gravity = Gravity.CENTER
             }
-        }, listener = { state ->
+        },
+        stateChangeBlock = { state ->
             if (state is ErrorState) {
                 text = state.message
                 visibility = VISIBLE

@@ -1,10 +1,9 @@
 package dmitry.molchanov.viewlikecompose
 
 import android.view.View
-import dmitry.molchanov.common.MainViewState
 
 /**
- * View, с блоком обработки состояния [MainViewState].
+ * View, с блоком обработки состояния R.
  */
 class StateView<T : View, R>(
     val view: T,

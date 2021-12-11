@@ -1,43 +1,24 @@
 ## Оглавление
 1. [О проекте](#о-проекте)
-2. [Модуль приложения compose](#модуль-приложения-compose)
-3. [Модуль приложения view](#модуль-приложения-view)\
-3.1. [Обвязка View](#обвязка-view)\
-3.2. [Простейший пример StateView](#простейший-пример-stateView)\
-3.3. [Добавление StateView на экран](#добавление-stateView-на-экран)\
-3.3. [Добавление корневого StateView на экран](#добавление-корневого-stateView-на-экран)\
-4. [Сравнение](#сравнение)\
-4.1. [Добавление на экран](#добавление-на-экран)\
-4.1. [Добавление дочерних элементов](#добавление-дочерних-элементов)\
-4.1. [Кнопка старта](#кнопка-старта)\
-4.1. [Линия прогресса воспроизведения](#линия-прогресса-воспроизведения)\
-5. [Итог](#итог)
+2. [Простейший пример StateView](#простейший-пример-stateView)
+3. [Сравнение](#сравнение)\
+3.1. [Добавление на экран](#добавление-на-экран)\
+3.2. [Добавление дочерних элементов](#добавление-дочерних-элементов)\
+3.3. [Кнопка старта](#кнопка-старта)\
+3.4. [Линия прогресса воспроизведения](#линия-прогресса-воспроизведения)
+4. [Итог](#итог)
 
 
-## О проекте.
-Одними из главных недостатках андроид [View](https://developer.android.com/reference/android/view/View)
-в сравнении с [Jetpack Compose](https://developer.android.com/jetpack/compose):
-* Разметка и обработка находятся в двух разных местах.
-* Работа с View не заточена под состояния.
+# О проекте
 
-Приложение состоит из двух моделей приложения:
-* compose;
-* view.
-В данном примере решил реализовать compose-like программную реализацию View и сравнить с compose реализацией.
+Пример реализации верстки экрана на андроид [View](https://developer.android.com/reference/android/view/View)
+в [Jetpack Compose](https://developer.android.com/jetpack/compose) стиле.
 
-## Модуль приложения compose
-Панель управления плеера, реализованная с использованием [Jetpack Compose](https://developer.android.com/jetpack/compose).
-Кто хочет сразу перейти к исходникам и сравнить:
+# Простейший пример
 
-[Compose панель управления.](https://github.com/MolchanovDmitry/ViewLikeCompose/blob/master/compose/src/main/kotlin/dmitry/molchanov/compose/MainScreen.kt)\
-[View панель управления.](https://github.com/MolchanovDmitry/ViewLikeCompose/blob/master/view/src/main/kotlin/dmitry/molchanov/viewlikecompose/MainScreen.kt)
-
-## Модуль приложения view
-
-### Обвязка View
-Создаем сущность StateView:
+Создаем обвязку вокруг View, в которой можно обрабатывать состояния вью модели:
 ```kotlin
-/** View, с блоком обработки состояния [MainViewState]. */
+/** View, с блоком обработки состояния [R]. */
 class StateView<T : View, R>(
     val view: T,
     private val stateChangeBlock: T.(R) -> Unit
@@ -47,9 +28,8 @@ class StateView<T : View, R>(
 }
 ```
 
-### Простейший пример StateView
-В качестве примера реализации `StateView` приведу `ProgressBar`, который отображается при получении состояния `LoadingState`.
-Обернем инициализацию `StateView` в функцию, чтобы было похоже на compose.
+`ProgressBar`, который отображается при получении состояния `LoadingState`.
+Обернем инициализацию `StateView` в функцию, чтобы было похоже на compose:
 ```kotlin
 private fun Context.progressBar() =
     StateView<ProgressBar, MainViewState>(
@@ -63,47 +43,6 @@ private fun Context.progressBar() =
         }
     )
 ```
-
-
-### Добавление StateView на экран
-Чтобы добавить `ProgressBar` из пункта выше в разметку, необходимо создать еще одну функцию,
-которая будет возвращать корневой `StateView`.
-Корневой `StateView` представляет из себя `FrameLayout`, который при изменении состояния будет
-проходиться по всем дочерним `StateView` и уведомлять о получении нового состояния.
-```kotlin
-fun Context.viewScreenRoot(viewModel: MainViewModel): StateView<FrameLayout, MainViewState> {
-    val viewWrappers = arrayOf(
-        progressBar(),
-    )
-    return StateView(
-        view = FrameLayout(this).apply {
-            viewWrappers
-                .map { it.view }
-                .forEach(::addView)
-        },
-        stateChangeBlock = { state ->
-            viewWrappers.forEach { viewWrapper -> viewWrapper.processState(state) }
-        }
-    )
-}
-```
-
-### Добавление корневого StateView на экран
-Чтобы добавить корневой `StateView` на экран, необходимо его создать и подписать через [StateFlow](https://developer.android.com/kotlin/flow/stateflow-and-sharedflow)
-```kotlin
-override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-
-    val stateView = viewScreenRoot(viewModel)
-    setContentView(stateView.view)
-
-    viewModel.stateFlow
-        .flowWithLifecycle(lifecycle, Lifecycle.State.CREATED)
-        .onEach(stateView::processState)
-        .launchIn(lifecycleScope)
-}
-```
-Готово, теперь мы имеем корневой и дочерние `StateView`, которые подписаны на состояния из вью модели.
 
 ## Сравнение
 
